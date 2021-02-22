@@ -1,0 +1,20 @@
+query GetRestaurants($lat: Float!, $long: Float!, $radius: Float!){
+  search(term:"burrito", categories: "mexican", latitude: $lat, longitude: $long, radius: $radius, sort_by: "distance") {
+    total
+    business {
+      id
+      name
+      price
+      phone
+      location {
+        formatted_address
+      }
+      reviews {
+        text
+        rating
+        time_created
+        url
+      }
+    }
+  }
+}
