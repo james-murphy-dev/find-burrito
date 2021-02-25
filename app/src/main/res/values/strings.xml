@@ -4,4 +4,5 @@
     <string name="api_key">"il6QmezMqhtcwkNaBS4P6_T8CHgXjj1vaLqU6BQw1K3Sw32i0t1oP4aQyeOYeYRjpXmzK_Doc-0xUHdrjt9gAcXR0t5F-gDP_DmC24hhO_ql3UvMHlIZJCwoLcYlYHYx   "</string>
     <string name="bullet_point">•</string>
     <string name="permssion_request">Please grant location permissions to see the nearby burrito restaurants</string>
+    <string name="location_not_found">The restaurant\'s location could not be obtained</string>
 </resources>

@@ -10,6 +10,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+    <TextView
+        android:background="@drawable/corner"
+        android:padding="20dp"
+        android:visibility="gone"
+        android:id="@+id/error_message"
+        android:textSize="18sp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:textColor="@color/white"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_marginBottom="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/location_not_found"/>
 
     <com.google.android.material.card.MaterialCardView
         style="@style/MaterialAnimations"

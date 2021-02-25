@@ -1,9 +1,11 @@
 package com.jmurphy.findburrito.ui
 
 import android.location.Geocoder
+import android.location.GnssNavigationMessage
 import android.os.Bundle
 import android.transition.Slide
 import android.transition.TransitionInflater
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -22,6 +24,8 @@ import com.google.android.material.card.MaterialCardView
 import com.jmurphy.findburrito.R
 import com.jmurphy.findburrito.RestaurantViewModel
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.IOError
+import java.io.IOException
 
 
 class RestaurantDetailFragment : Fragment(), OnMapReadyCallback {
@@ -33,20 +37,16 @@ class RestaurantDetailFragment : Fragment(), OnMapReadyCallback {
     private lateinit var viewModel: RestaurantViewModel
     private lateinit var mapView: MapView
     private lateinit var infoLayout: MaterialCardView
+    private lateinit var errorMessage: TextView
+
+    private val backPressedCallback =object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            parentFragmentManager.popBackStack()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                val ft: FragmentTransaction = parentFragmentManager.beginTransaction()
-                val detailView = RestaurantListFragment.newInstance()
-                ft.replace(R.id.fragment_holder, detailView)
-                ft.commit()
-
-            }
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(callback)
 
         postponeEnterTransition()
     }
@@ -67,16 +67,24 @@ class RestaurantDetailFragment : Fragment(), OnMapReadyCallback {
         activity?.actionBar?.setDisplayHomeAsUpEnabled(true)
 
         infoLayout = view.findViewById(R.id.info_card)
-
-
+        errorMessage = view.findViewById(R.id.error_message)
         mapView = view.findViewById(R.id.map_view)
         mapView.onCreate(savedInstanceState)
 
         mapView.getMapAsync(this)
 
         parentFragment?.startPostponedEnterTransition()
+
         val slideTransition = Slide()
         slideTransition.slideEdge = Gravity.START
+
+        requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        backPressedCallback.isEnabled = false
+        backPressedCallback.remove()
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
@@ -85,31 +93,24 @@ class RestaurantDetailFragment : Fragment(), OnMapReadyCallback {
             activity?.actionBar?.setTitle(restaurant.name)
 
             infoLayout.transitionName = restaurant.name
-            infoLayout.findViewById<TextView>(R.id.address).setText(restaurant.location?.formatted_address)
+            infoLayout.findViewById<TextView>(R.id.address).setText(restaurant.address)
             infoLayout.findViewById<TextView>(R.id.price_rating).setText(restaurant.price)
             infoLayout.findViewById<TextView>(R.id.phone_number).setText(restaurant.phone)
 
-          //  val zoom = CameraUpdateFactory.zoomTo(15f)
+            if (restaurant.coordinates != null){
 
-            val geocoder = Geocoder(context)
-            val addresses = geocoder.getFromLocationName(restaurant.location?.formatted_address, 1);
-
-            if (addresses.size>0){
-                val latitude = addresses.get(0).latitude
-                val longitude = addresses.get(0).longitude
-
-                val latLng = LatLng(latitude, longitude)
+                val latLng = LatLng(restaurant.coordinates!!.latitude, restaurant.coordinates!!.longitude)
                 val position = CameraPosition.Builder().target(latLng).zoom(15f).build()
                 val center = CameraUpdateFactory.newLatLng(latLng)
 
                 googleMap?.apply {
-                    addMarker(
-                        MarkerOptions()
-                            .position(latLng)
-                            .title(restaurant.name)
-                    )
+                    addMarker(MarkerOptions().position(latLng).title(restaurant.name)).showInfoWindow()
                     moveCamera(CameraUpdateFactory.newCameraPosition(position))
                 }
+            }
+            else{
+                //show error message
+                errorMessage.visibility = View.VISIBLE
             }
 
             startPostponedEnterTransition()

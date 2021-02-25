@@ -1,4 +1,4 @@
-package com.jmurphy.findburrito.dummy
+package com.jmurphy.findburrito.data
 
 import java.util.ArrayList
 import java.util.HashMap
@@ -10,12 +10,12 @@ import java.util.HashMap
  */
 object RestaurantContent {
 
-
-
     /**
      * An item representing a restaurant.
      */
-    data class RestaurantItem(val name: String, val address: String, val price: String, val phone: String) {
+    data class RestaurantItem(val name: String, val address: String, val price: String, val phone: String, var coordinates: Location? = null) {
         override fun toString(): String = name
     }
+
+    data class Location(val latitude: Double, val longitude: Double)
 }

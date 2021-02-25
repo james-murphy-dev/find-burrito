@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.jmurphy.findburrito.R
 
-import com.jmurphy.findburrito.dummy.RestaurantContent.RestaurantItem
+import com.jmurphy.findburrito.data.RestaurantContent.RestaurantItem
 
 /**
  * [RecyclerView.Adapter] that can display a [RestaurantItem].

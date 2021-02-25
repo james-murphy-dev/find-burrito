@@ -133,6 +133,7 @@ class RestaurantListFragment : Fragment(), OnItemClickListener{
         parentFragmentManager.beginTransaction()
             .addSharedElement(view, view.transitionName)
             .replace(R.id.fragment_holder, detailView)
+            .addToBackStack(null)
             .commit()
     }
 

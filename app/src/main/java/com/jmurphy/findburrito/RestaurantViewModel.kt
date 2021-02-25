@@ -1,15 +1,20 @@
 package com.jmurphy.findburrito
 
 import android.app.Application
+import android.location.Geocoder
 import android.location.Location
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import android.util.Log
+import androidx.lifecycle.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.libraries.maps.CameraUpdateFactory
+import com.google.android.libraries.maps.model.CameraPosition
+import com.google.android.libraries.maps.model.LatLng
+import com.google.android.libraries.maps.model.MarkerOptions
 import com.jmurphy.findburrito.data.BurritoRepository
+import com.jmurphy.findburrito.data.RestaurantContent
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 class RestaurantViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -17,7 +22,8 @@ class RestaurantViewModel(application: Application) : AndroidViewModel(applicati
     private var latitude = 0.0
     private var longitude = 0.0
 
-    private val selectedRestuarant = MutableLiveData<GetRestaurantsQuery.Business>()
+    private val selectedRestuarant = MutableLiveData<RestaurantContent.RestaurantItem>()
+    private val coordinates = MutableLiveData<Result<RestaurantContent.Location>>()
 
     val burritoRepository = BurritoRepository(getApplication())
 
@@ -57,11 +63,37 @@ class RestaurantViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun setSelectedRestaurant(restaurant: GetRestaurantsQuery.Business){
-        selectedRestuarant.value = restaurant
+        val item = RestaurantContent.RestaurantItem(
+                name = restaurant.name!!,
+                address = restaurant.location?.formatted_address!!,
+                price = restaurant.price!!,
+                phone = restaurant.phone!!
+        )
+        selectedRestuarant.value = item
     }
 
-    fun getSelectedRestaurant(): LiveData<GetRestaurantsQuery.Business> {
-        return selectedRestuarant
+    fun getSelectedRestaurant(): LiveData<RestaurantContent.RestaurantItem> {
+
+        return Transformations.map(selectedRestuarant) { restaurant ->
+
+            try {
+                val geocoder = Geocoder(getApplication())
+                val addresses = geocoder.getFromLocationName(restaurant.address, 1)
+
+                if (addresses.size > 0) {
+                    val latitude = addresses.get(0).latitude
+                    val longitude = addresses.get(0).longitude
+                    val location = RestaurantContent.Location(latitude, longitude)
+                    restaurant.coordinates = location
+                }
+
+            } catch (e: IOException) {
+                //show error message
+                Log.e("LocationError", e.toString())
+            }
+
+            restaurant
+        }
     }
 
 }
